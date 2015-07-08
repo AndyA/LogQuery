@@ -168,6 +168,7 @@ sub handle_combined {
     my $uri
      = URI->new( $site->{scheme} . "://" . $site->{hostname} . $path );
     $uri->port($1) if $site->{vhost} =~ /:(\d+)$/;
+    $uri = $uri->canonical;
     my $uri_no_query = $uri->clone;
     $uri_no_query->query(undef);
 
