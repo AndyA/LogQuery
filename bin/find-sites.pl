@@ -31,15 +31,16 @@ sub load_config {
    or die $Apache::Admin::Config::ERROR;
   $dbh->do("START TRANSACTION");
   for my $vhost ( $conf->section( -name => "VirtualHost" ) ) {
-    #    print Dumper($vhost);
-    my $name   = $vhost->directive( -name => "ServerName" )->value;
-    my $dir_dr = $vhost->directive( -name => "DocumentRoot" );
+    my $servername = $vhost->directive( -name => "ServerName" );
+    next unless defined $servername;
+    my $name     = $servername->value;
+    my $dir_dr   = $vhost->directive( -name => "DocumentRoot" );
     my $doc_root = $dir_dr ? $dir_dr->value : undef;
-    my $scheme = "http";
+    my $scheme   = "http";
     if ( defined( my $ssl = $vhost->directive( -name => "SSLEngine" ) ) ) {
       $scheme = "https" if $ssl->value =~ /^on$/i;
     }
-    say "  $scheme://$name $doc_root";
+    say "  $scheme://$name";
     $dbh->do(
       "INSERT INTO `weblog_site` (`sitename`, `hostname`, `vhost`, `scheme`, `root`) VALUES (?, ?, ?, ?, ?)",
       {}, $name, $name, $vhost->value, $scheme, $doc_root
