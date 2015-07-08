@@ -20,21 +20,16 @@ my $dbh = dbh(DB);
 read_log( $lf, 0 );
 
 sub read_log {
-## Please see file perltidy.ERR
-## Please see file perltidy.ERR
-  my (
-    $file, $p
-    : s ) = @_;
+  my ( $file, $p ) = @_;
   open my $fh, "<", $file;
   seek $fh, $pos, 0 if defined $pos;
   my @bad = ();
-  while ( defined( my $ln = <$fh> )
-   ) {
+  while ( defined( my $ln = <$fh> ) ) {
     chomp $ln;
-     my @log = $ln =~ m{(\S+) \s+ (\S+) \s+ \[(^]+)\] \s+ 
+    my @log = $ln =~ m{(\S+) \s+ (\S+) \s+ \[(^]+)\] \s+ 
                        "([^\s"]+) \s+ ([^\s"]+) \s+ ([^\s"]+)" \s+ 
                        (\d+) \s+ (\d+) \s+ "([^"]*)" \s+ "([^"]*)"$}x;
-     unless (@log) {
+    unless (@log) {
       push @bad, $ln;
       next;
     }
@@ -43,7 +38,7 @@ sub read_log {
       $ip,   $ident,  $user_id, $date,     $method, $path,
       $http, $status, $size,    $referrer, $ua
     ) = @log;
-   };
+  }
 }
 
 sub dbh {
