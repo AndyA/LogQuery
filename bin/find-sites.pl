@@ -35,10 +35,14 @@ sub load_config {
     my $name   = $vhost->directive( -name => "ServerName" )->value;
     my $dir_dr = $vhost->directive( -name => "DocumentRoot" );
     my $doc_root = $dir_dr ? $dir_dr->value : undef;
-    say "  $name $doc_root";
+    my $scheme = "http";
+    if ( defined( my $ssl = $vhost->directive( -name => "SSLEngine" ) ) ) {
+      $scheme = "https" if $ssl->value =~ /^on$/i;
+    }
+    say "  $scheme://$name $doc_root";
     $dbh->do(
-      "INSERT INTO `weblog_site` (`sitename`, `hostname`, `vhost`, `root`) VALUES (?, ?, ?, ?)",
-      {}, $name, $name, $vhost->value, $doc_root
+      "INSERT INTO `weblog_site` (`sitename`, `hostname`, `vhost`, `scheme`, `root`) VALUES (?, ?, ?, ?, ?)",
+      {}, $name, $name, $vhost->value, $scheme, $doc_root
     );
     my $site_id = $dbh->last_insert_id( undef, undef, undef, undef );
 

@@ -49,7 +49,6 @@ DROP TABLE IF EXISTS `weblog_entry`;
 CREATE TABLE `weblog_entry` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `log_id` int(10) unsigned NOT NULL,
-  `file_id` int(10) unsigned NOT NULL,
   `ip` varchar(20) NOT NULL,
   `ident` varchar(80) DEFAULT NULL,
   `user_id` varchar(80) DEFAULT NULL,
@@ -63,9 +62,13 @@ CREATE TABLE `weblog_entry` (
   `referrer` varchar(256) NOT NULL,
   `referrer_full` text NOT NULL,
   `user_agent` varchar(256) NOT NULL,
+  `uri` varchar(256) NOT NULL,
+  `uri_no_query` varchar(256) NOT NULL,
+  `hour` int(5) unsigned NOT NULL,
+  `day` int(5) unsigned NOT NULL,
+  `date` date NOT NULL,
   PRIMARY KEY (`id`),
   KEY `log_id` (`log_id`),
-  KEY `file_id` (`file_id`),
   KEY `ip` (`ip`),
   KEY `ident` (`ident`),
   KEY `user_id` (`user_id`),
@@ -76,7 +79,12 @@ CREATE TABLE `weblog_entry` (
   KEY `status` (`status`),
   KEY `size` (`size`),
   KEY `referrer` (`referrer`),
-  KEY `user_agent` (`user_agent`)
+  KEY `user_agent` (`user_agent`),
+  KEY `uri` (`uri`),
+  KEY `uri_no_query` (`uri_no_query`),
+  KEY `hour` (`hour`),
+  KEY `day` (`day`),
+  KEY `date` (`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -97,12 +105,10 @@ DROP TABLE IF EXISTS `weblog_file`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `weblog_file` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `log_id` int(10) unsigned NOT NULL,
   `filename` varchar(100) NOT NULL,
   `pos` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `log_id` (`log_id`)
+  PRIMARY KEY (`log_id`,`filename`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -154,6 +160,7 @@ CREATE TABLE `weblog_site` (
   `sitename` varchar(100) NOT NULL,
   `hostname` varchar(100) NOT NULL,
   `vhost` varchar(100) NOT NULL,
+  `scheme` varchar(20) NOT NULL,
   `root` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -177,4 +184,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-07-08  3:40:34
+-- Dump completed on 2015-07-08 12:38:37
