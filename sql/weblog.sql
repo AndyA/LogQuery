@@ -135,6 +135,7 @@ CREATE TABLE `weblog_log` (
   `log_dir` varchar(255) NOT NULL,
   `log_like` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `log_dir` (`log_dir`,`log_like`),
   KEY `site_id` (`site_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -162,7 +163,8 @@ CREATE TABLE `weblog_site` (
   `vhost` varchar(100) NOT NULL,
   `scheme` varchar(20) NOT NULL,
   `root` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hostname` (`hostname`,`scheme`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -184,4 +186,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-07-08 12:38:37
+-- Dump completed on 2015-07-10  0:46:08

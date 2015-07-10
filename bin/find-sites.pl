@@ -17,8 +17,6 @@ use constant PASS => 'aksluu123u';
 use constant DB   => 'weblog';
 
 my $dbh = dbh(DB);
-$dbh->do("TRUNCATE `$_`")
- for 'weblog_site', 'weblog_alias', 'weblog_log';
 
 for my $conf (@ARGV) {
   load_config( $dbh, $conf );
@@ -41,14 +39,25 @@ sub load_config {
       $scheme = "https" if $ssl->value =~ /^on$/i;
     }
     say "  $scheme://$name";
-    $dbh->do(
-      "INSERT INTO `weblog_site` (`sitename`, `hostname`, `vhost`, `scheme`, `root`) VALUES (?, ?, ?, ?, ?)",
-      {}, $name, $name, $vhost->value, $scheme, $doc_root
-    );
-    my $site_id = $dbh->last_insert_id( undef, undef, undef, undef );
+
+    my ($site_id)
+     = $dbh->selectrow_array(
+      "SELECT `id` FROM `weblog_site` WHERE `hostname` = ? AND `scheme` = ?",
+      {}, $name, $scheme );
+
+    unless ( defined $site_id ) {
+      $dbh->do(
+        "INSERT INTO `weblog_site` (`sitename`, `hostname`, `vhost`, `scheme`, `root`) VALUES (?, ?, ?, ?, ?)",
+        {}, $name, $name, $vhost->value, $scheme, $doc_root
+      );
+      $site_id = $dbh->last_insert_id( undef, undef, undef, undef );
+    }
 
     my @alias
      = map { $_->value } $vhost->directive( -name => "ServerAlias" );
+
+    $dbh->do( "DELETE FROM `weblog_alias` WHERE `site_id` = ?",
+      {}, $site_id );
 
     if (@alias) {
       $dbh->do(
@@ -63,12 +72,21 @@ sub load_config {
     my @log = ();
     for my $log ( $vhost->directive( -name => "CustomLog" ) ) {
       my ( $path, $kind ) = split /\s+/, $log->value, 2;
+      $path =~ s/^"(.+)"$/$1/;
+      say "  $path $kind";
       my @info = log_info($path);
       for my $info (@info) {
-        $dbh->do(
-          "INSERT INTO `weblog_log` (`site_id`, `kind`, `log_dir`, `log_like`) VALUES (?, ?, ?, ?)",
-          {}, $site_id, $kind, $info->{log_dir}, $info->{log_like}
-        );
+        my ($log_id)
+         = $dbh->selectrow_array(
+          "SELECT `id` FROM `weblog_log` WHERE `log_dir` = ? AND `log_like` = ?",
+          {}, $info->{log_dir}, $info->{log_like} );
+
+        unless ( defined $log_id ) {
+          $dbh->do(
+            "INSERT INTO `weblog_log` (`site_id`, `kind`, `log_dir`, `log_like`) VALUES (?, ?, ?, ?)",
+            {}, $site_id, $kind, $info->{log_dir}, $info->{log_like}
+          );
+        }
       }
     }
 
